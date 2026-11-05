@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.DS_Store
+
+# artefacts d’exécution (jamais commités)
+geocode_cache.json
+meta.json
+meta_photos.json
+keywords*.json
+rename*.csv
+*.log
+Movies/
+Images/
+compressed*/
