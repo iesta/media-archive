@@ -157,6 +157,40 @@ python3 $S/build_meta.py SRC_DIR OUT_DIR /tmp/sheets
 
 ## 4. Mots-clés visuels
 
+### Quel modèle pour lire les images ?
+
+La tâche est de la **perception** (sujet + lieu + action), pas du raisonnement. Donc : le
+modèle vision **le moins cher** de la famille disponible, jamais le flagship.
+
+| Famille | À prendre | À éviter |
+|---|---|---|
+| Claude | Haiku (vision OK) | Opus, Fable — 20-40× le prix, aucun gain sur ce type de tâche |
+| Gemini | Flash-Lite, sinon Flash | Pro / « Argon » |
+| OpenAI | nano, sinon mini | gpt-5.5, *-pro |
+| Modèle de session bon marché (ex. deepseek-flash) | directement, sans sous-agent | — |
+| Local (Ollama/MLX, ex. Qwen2-VL) | gratuit, correct pour plage/animaux/objets | — |
+
+**Méthode de choix (3 étapes)**
+1. Lister les modèles et leur prix : outil `models` / `opencode models`, trier par
+   `cost.input` + `cost.output`. Viser < ~$0.50/M entrée.
+2. **Vérifier la vision** : envoyer UNE planche, si la réponse est vide ou générique (« une
+   image »), le modèle est text-only → prendre le suivant.
+3. Garder le même modèle pour tout le lot : les mots-clés restent cohérents d'un clip à l'autre.
+
+**Qui lit les planches**
+- Modèle de session déjà bon marché → lire en direct (`read`), zéro sous-agent, zéro config.
+- Modèle de session cher (Opus, GPT-5.5, Gemini Pro…) → déléguer : `subagent({agent:"general",
+  model:"<provider>/<modèle-vision-pas-cher>", ...})`, un sous-agent par lot de 6-10 planches,
+  avec la consigne exacte (3-4 tags, minuscules, sans accents, français). Les sous-agents
+  reviennent avec les tags, l'agent principal écrit `keywords.json`.
+- Ne jamais lancer un sous-agent par image : le coût fixe du prompt dépasse le coût de l'image.
+
+**Budget** : une planche ≈ 700-1500 tokens d'entrée. 36 planches ≈ 40-55k tokens ≈ quelques
+centimes en Haiku/Flash-Lite, plusieurs dollars en Opus. Si le lot dépasse ~200 planches :
+réduire d'abord (3 frames → 2, 6 tuiles → 4) avant de changer de modèle.
+
+### Lire et écrire les mots-clés
+
 `build_meta.py` produit une planche-contact par clip : 3 frames à 2/10/30 s (écrêtées à la
 durée) en `hstack`. **Les lire une par une** (`read` sur le jpg) et écrire 3-4 mots-clés
 français, minuscules, sans accents, séparés par `-` : `chevaux-plage-mangrove`,

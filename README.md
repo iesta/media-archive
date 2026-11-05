@@ -8,7 +8,9 @@ phone dump into a compact, searchable archive:
 - **metadata preserved** — capture date, GoPro `moov/udta` atoms (`FIRM`, `LENS`, `CAME`,
   `SETT`, `MUID`, `GPMF`) restored by binary patch, telemetry (`gpmd`) kept
 - **GPS → place** — parses the GPMF telemetry track, reverse-geocodes with Nominatim/OSM
-- **keywords** — the agent reads 3 frames per clip (2/10/30 s) and writes 3–4 tags
+- **keywords** — the agent reads 3 frames per clip (2/10/30 s) and writes 3–4 tags,
+  using the cheapest vision model available (Haiku / Flash-Lite / nano class, never a
+  flagship: same result at 20–40× the price)
 - **reversible rename** — `2016-04-28_gopro-hero6_145_mexique-holbox_chevaux-balade-flaques.mp4`,
   every mapping kept in a CSV
 - **JPEG pass** — quality-85 re-encode, EXIF + GPS preserved (~55 % of the weight)
@@ -99,6 +101,15 @@ logs/
 
 Re-encoding GoPro footage **at the same resolution and quality saves nothing** — the gain
 comes from resolution, not from the codec.
+
+## Cost of the keyword step
+
+Perception, not reasoning: use the cheapest vision model of the family you have.
+One contact sheet ≈ 700–1500 input tokens, so a 36-clip library is a few cents on a
+Haiku/Flash-Lite-class model versus a few dollars on a flagship. If the session model is
+already cheap, read the sheets inline; if it is expensive, delegate to sub-agents pinned to
+a cheap vision model, one sub-agent per batch of 6–10 sheets — never one per image.
+Details: `SKILL.md` § 4.
 
 ## Notes & gotchas
 
