@@ -58,16 +58,23 @@ def read(path):
 
 
 def sheet(paths, out):
+    """Planche 3 x n : 1 photo par case, étiquetée « 1) nom.jpg », grille rouge."""
     tw, th = 480, 360
-    img = Image.new("RGB", (tw * 3, th * 2), "white")
+    rows = (len(paths) + 2) // 3
+    img = Image.new("RGB", (tw * 3, th * rows), (245, 245, 245))
     d = ImageDraw.Draw(img)
     for i, p in enumerate(paths):
         t = Image.open(p)
-        t.thumbnail((tw, th))
+        t.thumbnail((tw - 8, th - 26))
         x, y = (i % 3) * tw, (i // 3) * th
-        img.paste(t, (x + (tw - t.width) // 2, y + (th - t.height) // 2))
-        d.text((x + 4, y + 4), os.path.basename(p), fill="red")
-    img.save(out, quality=85)
+        img.paste(t, (x + (tw - t.width) // 2, y + 24 + (th - 24 - t.height) // 2))
+        d.rectangle([x, y, x + tw - 1, y + 20], fill="black")
+        d.text((x + 4, y + 5), f"{i + 1}) {os.path.basename(p)}", fill="white")
+    for c in (0, 1, 2):                      # séparateurs verticaux
+        d.line([(c * tw, 0), (c * tw, th * rows)], fill="red", width=2)
+    for r in range(1, rows):                 # séparateurs horizontaux
+        d.line([(0, r * th), (tw * 3, r * th)], fill="red", width=2)
+    img.save(out, quality=88)
     return out
 
 

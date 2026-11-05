@@ -189,6 +189,34 @@ modèle vision **le moins cher** de la famille disponible, jamais le flagship.
 centimes en Haiku/Flash-Lite, plusieurs dollars en Opus. Si le lot dépasse ~200 planches :
 réduire d'abord (3 frames → 2, 6 tuiles → 4) avant de changer de modèle.
 
+### Planches : plusieurs images par envoi
+
+Ne jamais envoyer une image par requête : trop d'appels, trop de tokens fixes, aucune vue
+d'ensemble. Une planche = **plusieurs vignettes étiquetées et séparées** :
+
+| Contenu | Disposition | Densité |
+|---|---|---|
+| Photos | grille 3 colonnes, 1 photo/case, étiquette `n) nom.jpg` + traits rouges | 6 par planche (9 max), 128 px de haut mini par vignette |
+| Vidéo | 3 vignettes côte à côte = 2 s \| 10 s \| 30 s (ordre fixe, documenté) | 3 par clip, 1 planche par clip |
+
+`photos.py` génère déjà les étiquettes + la grille ; `build_meta.py` les 3 frames vidéo.
+Les étiquettes sont ce qui permet d'attribuer les mots-clés **par zone** sans ambiguïté :
+la réponse doit citer le numéro ou le nom de la case, jamais « l'image de gauche ».
+
+Prompt à donner au modèle (inline ou sous-agent), tel quel :
+
+```
+Pour chaque case numérotée de cette planche, donne 3 mots-clés français décrivant
+sujet + lieu + action. Réponds uniquement par des lignes :
+<n° case>) <tag1>-<tag2>-<tag3>
+Minuscules, sans accents, séparés par des tirets, aucun commentaire.
+Si une case est vide ou illisible : <n° case>) illisible
+```
+
+Récupérer la sortie telle quelle dans `keywords.json` (clé = basename sans extension).
+Contrôle rapide : un tag qui revient sur >80 % des cases d'un même lieu ≈ normal ; sur des
+lieux différents ≈ le modèle ne regarde pas les images → changer de modèle.
+
 ### Lire et écrire les mots-clés
 
 `build_meta.py` produit une planche-contact par clip : 3 frames à 2/10/30 s (écrêtées à la
